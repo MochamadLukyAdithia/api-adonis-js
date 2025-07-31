@@ -8,6 +8,8 @@ Selamat datang di dokumentasi resmi untuk **REST API Chatbot Maja.AI**. Proyek i
 
 Proyek ini dikembangkan menggunakan **AdonisJS v5** dan **PostgreSQL** sebagai bagian dari proses seleksi untuk posisi Magang Backend Developer.
 
+<img width="1003" height="653" alt="image" src="https://github.com/user-attachments/assets/c9be428b-05d3-4677-9256-32b01f381c31" />
+
 -----
 
 ## ✨ Fitur Utama
@@ -158,8 +160,7 @@ Berikut adalah detail untuk setiap endpoint yang tersedia.
 
 **Contoh URL:** `http://127.0.0.1:3333/api/conversations?page=1&limit=5`
 
-\<details\>
-\<summary\>\<strong\>✅ Contoh Response Sukses (200 OK)\</strong\>\</summary\>
+✅ Contoh Response Sukses (200 OK)
 
 ```json
 {
@@ -193,8 +194,6 @@ Berikut adalah detail untuk setiap endpoint yang tersedia.
 }
 ```
 
-\</details\>
-
 -----
 
 ### 3\. Ambil Detail Percakapan
@@ -202,8 +201,7 @@ Berikut adalah detail untuk setiap endpoint yang tersedia.
   - **Endpoint**: `GET /api/conversations/:id`
   - **Deskripsi**: Mendapatkan detail lengkap dari satu sesi percakapan, termasuk riwayat semua pesan di dalamnya.
 
-\<details\>
-\<summary\>\<strong\>✅ Contoh Response Sukses (200 OK)\</strong\>\</summary\>
+✅ Contoh Response Sukses (200 OK)
 
 ```json
 {
@@ -232,11 +230,7 @@ Berikut adalah detail untuk setiap endpoint yang tersedia.
   ]
 }
 ```
-
-\</details\>
-
-\<details\>
-\<summary\>\<strong\>❌ Contoh Response Gagal (404 Not Found)\</strong\>\</summary\>
+❌ Contoh Response Gagal (404 Not Found)
 
 ```json
 {
@@ -244,8 +238,6 @@ Berikut adalah detail untuk setiap endpoint yang tersedia.
   "message": "Percakapan tidak ditemukan"
 }
 ```
-
-\</details\>
 
 -----
 
@@ -254,8 +246,7 @@ Berikut adalah detail untuk setiap endpoint yang tersedia.
   - **Endpoint**: `DELETE /api/conversations/:id`
   - **Deskripsi**: Menghapus sebuah percakapan beserta semua pesan yang terkait di dalamnya secara permanen.
 
-\<details\>
-\<summary\>\<strong\>✅ Contoh Response Sukses (200 OK)\</strong\>\</summary\>
+✅ Contoh Response Sukses (200 OK)
 
 ```json
 {
@@ -264,19 +255,13 @@ Berikut adalah detail untuk setiap endpoint yang tersedia.
 }
 ```
 
-\</details\>
-
-\<details\>
-\<summary\>\<strong\>❌ Contoh Response Gagal (404 Not Found)\</strong\>\</summary\>
-
+❌ Contoh Response Gagal (404 Not Found)
 ```json
 {
   "success": false,
   "message": "Percakapan tidak ditemukan"
 }
 ```
-
-\</details\>
 
 -----
 
