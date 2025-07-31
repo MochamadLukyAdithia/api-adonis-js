@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maja.AI - Asisten Virtual Cerdas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                        'slide-up': 'slideUp 0.3s ease-out',
+                        'typing': 'typing 1.4s infinite ease-in-out',
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+                        slideUp: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+                        typing: { '0%, 60%, 100%': { opacity: '0.3' }, '30%': { opacity: '1' } }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .scrollbar-thin::-webkit-scrollbar { width: 4px; }
+        .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+        .scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.4); border-radius: 2px; }
+        .auto-resize { resize: none; overflow: hidden; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    </style>
+</head>
+<body class="h-full bg-gray-100 font-sans">
+
+    <button id="chat-toggle-button" class="fixed bottom-8 right-8 z-20 w-16 h-16 bg-gray-900 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 ease-in-out hover:bg-black hover:scale-110">
+        <i id="chat-open-icon" class="fas fa-comment-dots text-2xl"></i>
+        <i id="chat-close-icon" class="fas fa-times text-2xl hidden"></i>
+    </button>
+
+    <div id="chat-widget-container" class="fixed bottom-28 right-8 z-10 w-[400px] h-[70vh] max-h-[600px] flex flex-col bg-white rounded-2xl shadow-2xl transition-all duration-300 ease-in-out transform-origin-bottom-right opacity-0 scale-95 translate-y-4 invisible">
+        
+        <header class="flex-shrink-0 border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-10 rounded-t-2xl">
+            <div class="flex items-center justify-between px-4 py-3">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center shadow-sm">
+                        <i class="fa-solid fa-robot text-white text-sm"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-md font-semibold text-gray-900">Maja.AI</h1>
+                        <p class="text-xs text-green-600 font-medium">Online</p>
+                    </div>
+                </div>
+                <button id="widget-close-button" class="text-gray-400 hover:text-gray-700">
+                     <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+        </header>
+
+        <main id="chat-container" class="flex-1 overflow-y-auto px-4 py-6 scrollbar-thin">
+            <div id="welcome-message" class="text-center py-10 animate-fade-in">
+                <div class="w-16 h-16 bg-gray-900 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                    <i class="fa-solid fa-robot text-white text-3xl"></i>
+                </div>
+                <h2 class="text-xl font-semibold text-gray-900 mb-2">Selamat datang di Maja.AI</h2>
+                <p class="text-gray-600 max-w-md mx-auto text-sm leading-relaxed">Mulai percakapan dengan mengetik di bawah ini.</p>
+            </div>
+        </main>
+
+        <footer class="flex-shrink-0 border-t border-gray-200 bg-white/80 backdrop-blur-sm rounded-b-2xl">
+            <div class="px-4 py-3">
+                <form id="chat-form" class="relative">
+                    <div class="flex items-end space-x-2">
+                        <div class="flex-1 relative">
+                            <textarea id="message-input" placeholder="Tulis pesan..." class="auto-resize w-full pl-4 pr-10 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-800 focus:border-transparent resize-none text-sm placeholder-gray-500 bg-white shadow-sm min-h-[44px] max-h-32" rows="1" autocomplete="off" required></textarea>
+                        </div>
+                        <button type="submit" id="send-button" class="flex-shrink-0 w-11 h-11 bg-gray-900 hover:bg-black disabled:bg-gray-300 text-white rounded-xl transition-all duration-200 flex items-center justify-center shadow-sm hover:shadow-md disabled:cursor-not-allowed disabled:scale-100 hover:scale-105" disabled>
+                            <i class="fas fa-arrow-up text-lg"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const chatToggleButton = document.getElementById('chat-toggle-button');
+            const chatWidgetContainer = document.getElementById('chat-widget-container');
+            const widgetCloseButton = document.getElementById('widget-close-button');
+            const chatOpenIcon = document.getElementById('chat-open-icon');
+            const chatCloseIcon = document.getElementById('chat-close-icon');
+
+            class MajaChatApp {
+                constructor() {
+                    this.chatForm = document.getElementById('chat-form');
+                    this.messageInput = document.getElementById('message-input');
+                    this.sendButton = document.getElementById('send-button');
+                    this.chatContainer = document.getElementById('chat-container');
+                    this.welcomeMessage = document.getElementById('welcome-message');
+                    this.isFirstMessage = true;
+                    this.sessionId = localStorage.getItem('session_id');
+                    this.init();
+                }
+
+                init() {
+                    this.setupEventListeners();
+                }
+
+                setupEventListeners() {
+                    this.messageInput.addEventListener('input', () => {
+                        this.autoResizeTextarea();
+                        this.toggleSendButton();
+                    });
+                    this.chatForm.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        this.handleSubmit();
+                    });
+                    this.messageInput.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            if (this.messageInput.value.trim()) {
+                                this.handleSubmit();
+                            }
+                        }
+                    });
+                    chatToggleButton.addEventListener('click', () => this.toggleChatWidget());
+                    widgetCloseButton.addEventListener('click', () => this.toggleChatWidget());
+                }
+
+                toggleChatWidget() {
+                    const isHidden = chatWidgetContainer.classList.contains('invisible');
+                    if (isHidden) {
+                        chatWidgetContainer.classList.remove('invisible', 'opacity-0', 'scale-95', 'translate-y-4');
+                        chatWidgetContainer.classList.add('visible', 'opacity-100', 'scale-100', 'translate-y-0');
+                        chatOpenIcon.classList.add('hidden');
+                        chatCloseIcon.classList.remove('hidden');
+                        this.messageInput.focus();
+                    } else {
+                        chatWidgetContainer.classList.add('opacity-0', 'scale-95', 'translate-y-4');
+                        setTimeout(() => {
+                           chatWidgetContainer.classList.add('invisible');
+                           chatWidgetContainer.classList.remove('visible', 'opacity-100', 'scale-100', 'translate-y-0');
+                        }, 300);
+                        chatOpenIcon.classList.remove('hidden');
+                        chatCloseIcon.classList.add('hidden');
+                    }
+                }
+
+                autoResizeTextarea() {
+                    this.messageInput.style.height = 'auto';
+                    this.messageInput.style.height = Math.min(this.messageInput.scrollHeight, 128) + 'px';
+                }
+
+                toggleSendButton() {
+                    this.sendButton.disabled = !this.messageInput.value.trim().length > 0;
+                }
+
+                async handleSubmit() {
+                    const message = this.messageInput.value.trim();
+                    if (!message || this.sendButton.disabled) return;
+                    this.messageInput.value = '';
+                    this.autoResizeTextarea();
+                    this.toggleSendButton();
+                    this.addMessage('user', message);
+                    this.showTypingIndicator();
+                    try {
+                        const response = await this.sendMessageToAPI(message);
+                        this.hideTypingIndicator();
+                        if (response.ok) {
+                            const data = await response.json();
+                            this.sessionId = data.session_id;
+                            localStorage.setItem('session_id', this.sessionId);
+                            this.addMessage('assistant', data.reply);
+                        } else {
+                            const errorData = await response.json();
+                            this.addMessage('assistant', `Maaf, terjadi kesalahan: ${errorData.message || 'Server error'}`);
+                        }
+                    } catch (error) {
+                        this.hideTypingIndicator();
+                        console.error('Error:', error);
+                        this.addMessage('assistant', 'Maaf, tidak dapat terhubung ke server. Pastikan server lokal Anda berjalan.');
+                    }
+                    this.messageInput.focus();
+                }
+               
+                async sendMessageToAPI(message) {
+                    return fetch('http://127.0.0.1:3333/api/v1/questions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            question: message,
+                            session_id: this.sessionId,
+                        }),
+                    });
+                }
+
+                addMessage(sender, content) {
+                    if (this.isFirstMessage && this.welcomeMessage) {
+                        this.welcomeMessage.remove();
+                        this.isFirstMessage = false;
+                    }
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = `flex items-start space-x-3 animate-slide-up mb-6 ${sender === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`;
+                    const avatar = document.createElement('div');
+                    avatar.className = `w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm ${sender === 'user' ? 'bg-gray-700' : 'bg-gray-900'}`;
+                    avatar.innerHTML = sender === 'user' ? '<i class="fas fa-user text-white text-sm"></i>' : '<i class="fa-solid fa-robot text-white text-sm"></i>';
+                    const bubble = document.createElement('div');
+                    bubble.className = `max-w-[85%] sm:max-w-[75%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${sender === 'user' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-900'}`;
+                    bubble.innerHTML = this.formatMessage(content);
+                    messageDiv.appendChild(avatar);
+                    messageDiv.appendChild(bubble);
+                    this.chatContainer.appendChild(messageDiv);
+                    this.scrollToBottom();
+                }
+                
+                formatMessage(text) {
+                    return text
+                        .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')
+                        .replace(/\*(.*?)\*/g, '<em class="italic">$1</em>')
+                        .replace(/`([^`]+)`/g, '<code class="bg-gray-200 text-gray-800 px-1.5 py-0.5 rounded text-xs font-mono">$1</code>')
+                        .replace(/\n/g, '<br>');
+                }
+
+                showTypingIndicator() {
+                    const typingDiv = document.createElement('div');
+                    typingDiv.id = 'typing-indicator';
+                    typingDiv.className = 'flex items-start space-x-3 mb-6 animate-slide-up';
+                    typingDiv.innerHTML = `<div class="w-8 h-8 bg-gray-900 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm"><i class="fa-solid fa-robot text-white text-sm"></i></div><div class="bg-gray-100 px-4 py-3 rounded-2xl"><div class="flex items-center space-x-1"><div class="w-2 h-2 bg-gray-400 rounded-full animate-typing"></div><div class="w-2 h-2 bg-gray-400 rounded-full animate-typing" style="animation-delay: 0.2s;"></div><div class="w-2 h-2 bg-gray-400 rounded-full animate-typing" style="animation-delay: 0.4s;"></div></div></div>`;
+                    this.chatContainer.appendChild(typingDiv);
+                    this.scrollToBottom();
+                }
+
+                hideTypingIndicator() {
+                    const typing = document.getElementById('typing-indicator');
+                    if (typing) typing.remove();
+                }
+
+                scrollToBottom() {
+                    setTimeout(() => {
+                        this.chatContainer.scrollTo({ top: this.chatContainer.scrollHeight, behavior: 'smooth' });
+                    }, 100);
+                }
+            }
+
+            new MajaChatApp();
+        });
+    </script>
+</body>
+</html>

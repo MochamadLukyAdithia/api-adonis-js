@@ -18,4 +18,26 @@ export default class ConversationsController {
       })
     }
   }
+
+  public async readAll({ request, response }: HttpContextContract) {
+    const { page = 1, perPage = 10 } = request.qs()
+    const conversations = await this.conversationService.readAll(Number(page), Number(perPage))
+    return response.ok(conversations)
+  }
+
+  public async readById({ params, response }: HttpContextContract) {
+    const data = await this.conversationService.readById(params.id)
+    return response.ok(data)
+  }
+
+  public async delete({ params, response }: HttpContextContract) {
+  const result = await this.conversationService.delete(params.id);
+
+  if (result.success) {
+    return response.ok(result); 
+  } else {
+    return response.badRequest(result); 
+  }
+}
+
 }

@@ -13,6 +13,9 @@ export default class extends BaseSchema {
       table.enum('role', ['admin', 'user']).defaultTo('user')
       table.boolean('is_active').defaultTo(true)
       table.timestamp('last_login_at', { useTz: true }).nullable()
+
+      table.string('token', 255).nullable() // ← tambahkan ini
+
       table.timestamp('created_at', { useTz: true })
       table.timestamp('updated_at', { useTz: true })
     })
