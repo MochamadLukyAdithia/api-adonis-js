@@ -41,6 +41,7 @@ export default class ConversationService {
           additional_context: payload.additional_context || "",
         }
       );
+      console.log(apiResponse.data?.data?.message)
 
       const messageArray = apiResponse.data?.data?.message || [];
 
